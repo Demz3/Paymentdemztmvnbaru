@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIXEL PAYMENT • BLUE GLOW</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+    image-rendering: pixelated;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #050b16;
+    background-image:
+      linear-gradient(135deg, #061428 0%, #020812 100%),
+      repeating-linear-gradient(0deg, rgba(0,180,255,.06) 0 2px, transparent 2px 6px),
+      repeating-linear-gradient(90deg, rgba(0,180,255,.06) 0 2px, transparent 2px 6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.2rem;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Glow statis (tidak animasi → anti lag) */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 40%, rgba(0,140,255,.18), rgba(0,80,200,.06) 45%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanline ringan */
+  .scanline {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 99;
+    opacity: .5;
+  }
+
+  /* ===== CARD ===== */
+  .card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 780px;
+    background: #071427;
+    border: 4px solid #00a6ff;
+    border-radius: 10px;
+    padding: 1.8rem 1.5rem;
+    box-shadow:
+      0 0 0 3px #001c38,
+      0 0 22px #0088ff,
+      0 0 55px rgba(0,120,255,.5),
+      inset 0 0 22px rgba(0,150,255,.25);
+    /* anti lag: hindari animasi box-shadow */
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    text-align: center;
+    border-bottom: 4px dashed #00a6ff;
+    padding-bottom: .9rem;
+    margin-bottom: 1.6rem;
+  }
+  .header h1 {
+    font-size: 2rem;
+    letter-spacing: 5px;
+    color: #bfe6ff;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 0 #003b6f, 0 0 18px #00aaff;
+    word-break: break-word;
+  }
+  .header span {
+    display: block;
+    margin-top: 6px;
+    font-size: .8rem;
+    letter-spacing: 4px;
+    color: #7fc9ff;
+    text-shadow: 0 0 8px #0088ff;
+  }
+
+  /* ===== ITEM ===== */
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .7rem;
+    background: #0a1e36;
+    border: 3px solid #0077cc;
+    border-radius: 8px;
+    padding: .9rem 1.1rem;
+    box-shadow: 0 0 0 2px #00284d, 0 0 14px rgba(0,140,255,.45), inset 0 0 12px rgba(0,110,220,.35);
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+  .name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #b3e0ff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #003366, 0 0 10px #00aaff;
+  }
+  .number {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    background: #001c33;
+    border: 2px solid #00a6ff;
+    border-radius: 4px;
+    padding: .1rem .6rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #00ddff;
+    box-shadow: inset 0 0 10px #0066cc;
+    word-break: break-all;
+    width: fit-content;
+  }
+  .holder {
+    font-size: .8rem;
+    color: #8ac4ff;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ===== TOMBOL SALIN ===== */
+  .copy {
+    background: #0f2e4a;
+    border: 3px solid #00a6ff;
+    border-radius: 6px;
+    color: #e0f0ff;
+    font-size: .85rem;
+    font-weight: bold;
+    padding: .6rem 1.1rem;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 2px #003355, 0 0 12px rgba(0,150,255,.6), inset 0 0 8px #0077dd;
+    transition: transform .08s, box-shadow .08s, background .08s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-family: inherit;
+    will-change: transform;
+  }
+  .copy::before { content: "📋"; font-size: 1rem; }
+  .copy:hover {
+    background: #1a4970;
+    box-shadow: 0 0 0 2px #0066cc, 0 0 22px #00ccff, inset 0 0 12px #0099ff;
+    color: #fff;
+    transform: scale(1.03);
+  }
+  .copy:active {
+    transform: scale(.96);
+    box-shadow: 0 0 0 2px #0099ff, 0 0 30px #00aaff, inset 0 0 15px #fff;
+  }
+
+  /* ===== QRIS ===== */
+  .qris {
+    text-align: center;
+    background: #03182b;
+    border: 4px solid #0099ee;
+    border-radius: 10px;
+    padding: 1.3rem 1rem;
+    box-shadow: 0 0 0 3px #002244, 0 0 30px rgba(0,140,255,.55), inset 0 0 22px rgba(0,110,220,.4);
+  }
+  .qris h2 {
+    color: #b3e0ff;
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+    margin-bottom: .9rem;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 0 #00335e, 0 0 18px #00aaff;
+  }
+  .qr-wrap {
+    display: inline-block;
+    background: #000f1c;
+    border: 3px solid #00a6ff;
+    border-radius: 8px;
+    padding: .7rem;
+    box-shadow: inset 0 0 25px #0066cc, 0 0 22px rgba(0,150,255,.6);
+    margin-bottom: 1rem;
+  }
+  .qr-wrap img {
+    display: block;
+    width: 260px;
+    max-width: 100%;
+    height: auto;
+    background: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    border: 2px solid #00ccff;
+    image-rendering: pixelated;
+  }
+
+  /* ===== TOMBOL DOWNLOAD ===== */
+  .download {
+    background: #0f2e4a;
+    border: 4px solid #00a6ff;
+    border-radius: 8px;
+    color: #e0f0ff;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: .85rem 1.8rem;
+    cursor: pointer;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 2px #003355, 0 0 20px rgba(0,150,255,.6), inset 0 0 10px #0077dd;
+    transition: transform .08s, box-shadow .08s, background .08s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: inherit;
+    will-change: transform;
+  }
+  .download::before { content: "⬇️"; font-size: 1.2rem; }
+  .download:hover {
+    background: #1a4970;
+    box-shadow: 0 0 0 2px #0066cc, 0 0 35px #00ccff, inset 0 0 18px #0099ff;
+    color: #fff;
+    transform: scale(1.03);
+  }
+  .download:active { transform: scale(.96); }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: #0a2848;
+    border: 4px solid #00ddff;
+    color: #fff;
+    font-weight: bold;
+    padding: .8rem 1.6rem;
+    border-radius: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 3px #003366, 0 0 40px rgba(0,170,255,.75), inset 0 0 15px #0099ff;
+    text-shadow: 0 0 10px #00ddff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 999;
+    font-size: .9rem;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 520px) {
+    .card { padding: 1.2rem .9rem; }
+    .header h1 { font-size: 1.4rem; letter-spacing: 3px; }
+    .item { flex-direction: column; align-items: stretch; }
+    .copy { width: 100%; justify-content: center; }
+    .number { font-size: 1rem; }
+    .qris h2 { font-size: 1.2rem; letter-spacing: 3px; }
+    .qr-wrap img { width: 200px; }
+    .download { font-size: .85rem; padding: .7rem 1.2rem; letter-spacing: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div class="card">
+  <div class="header">
+    <h1>◆ PIXEL PAY ◆</h1>
+    <span>BLUE GLOW EDITION</span>
+  </div>
+
+  <div class="list">
+    <!-- DANA -->
+    <div class="item">
+      <div class="info">
+        <span class="name">DANA</span>
+        <span class="number" id="n1">083831960212</span>
+        <span class="holder">A/n De Mingga</span>
+      </div>
+      <button class="copy" data-copy="083831960212">Salin</button>
+    </div>
+
+    <!-- SEA BANK -->
+    <div class="item">
+      <div class="info">
+        <span class="name">Sea Bank</span>
+        <span class="number" id="n2">901818594214</span>
+        <span class="holder">A/n De Mingga</span>
+      </div>
+      <button class="copy" data-copy="901818594214">Salin</button>
+    </div>
+
+    <!-- SHOPEE PAY -->
+    <div class="item">
+      <div class="info">
+        <span class="name">Shopee Pay</span>
+        <span class="number" id="n3">083831960212</span>
+        <span class="holder">A/n De Mingga</span>
+      </div>
+      <button class="copy" data-copy="083831960212">Salin</button>
+    </div>
+
+    <!-- GOPAY -->
+    <div class="item">
+      <div class="info">
+        <span class="name">Gopay</span>
+        <span class="number" id="n4">083831960212</span>
+        <span class="holder">A/n De Mingga</span>
+      </div>
+      <button class="copy" data-copy="083831960212">Salin</button>
+    </div>
+
+    <!-- OVO -->
+    <div class="item">
+      <div class="info">
+        <span class="name">OVO</span>
+        <span class="number" id="n5">083831960212</span>
+        <span class="holder">A/n De Mingga</span>
+      </div>
+      <button class="copy" data-copy="083831960212">Salin</button>
+    </div>
+  </div>
+
+  <!-- QRIS -->
+  <div class="qris">
+    <h2>◈ QRIS ◈</h2>
+    <div class="qr-wrap">
+      <img
+        id="qrisImg"
+        src="https://files.catbox.moe/1d1mvz.jpg"
+        alt="QRIS De Mingga"
+        loading="lazy"
+        crossorigin="anonymous"
+      >
+    </div>
+    <br>
+    <button class="download" id="dlBtn">Download QRIS</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Disalin!</div>
+
+<script>
+(function(){
+  const toast = document.getElementById('toast');
+  let tTimer = null;
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(tTimer);
+    tTimer = setTimeout(()=>toast.classList.remove('show'), 1500);
+  }
+
+  // ===== COPY =====
+  async function copyText(text){
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch(e){
+      return false;
+    }
+  }
+
+  document.querySelectorAll('.copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const val = btn.getAttribute('data-copy');
+      const ok = await copyText(val);
+      showToast(ok ? '✓ Nomor Disalin!' : '✗ Gagal Salin');
+    });
+  });
+
+  // ===== DOWNLOAD QRIS =====
+  const dlBtn = document.getElementById('dlBtn');
+  const qrisImg = document.getElementById('qrisImg');
+
+  dlBtn.addEventListener('click', async () => {
+    const url = qrisImg.src;
+    if(!url){ showToast('✗ QRIS tidak tersedia'); return; }
+
+    showToast('⬇ Mengunduh...');
+
+    try {
+      // Coba fetch → blob
+      const res = await fetch(url, { mode: 'cors' });
+      if(!res.ok) throw new Error('gagal fetch');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'qris-de-mingga.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      showToast('✓ QRIS Diunduh!');
+    } catch(err){
+      // Fallback: buka di tab baru (bisa disimpan manual)
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'qris-de-mingga.jpg';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('✓ QRIS Dibuka!');
+      } catch(e){
+        window.open(url, '_blank');
+        showToast('✓ QRIS Dibuka di Tab Baru');
+      }
+    }
+  });
+
+  // Gambar gagal load
+  qrisImg.addEventListener('error', () => {
+    showToast('⚠ Gambar QRIS gagal dimuat');
+  });
+})();
+</script>
+</body>
+</html>
